@@ -1,0 +1,56 @@
+======CENTOS7======
+======CAU LENH KIEM TRA GOI PACKET DUOC CAI HAY CHUA=====
+	- rpm -q [ten goi packet] 
+	- vd: rmp -q ifconfig
+======INSTALL======
+1. ifconfig [--------https://goo.gl/z4OYdH----------]
+	- B1. yum provides ifconfig || yum whatprovides ifconfig : are used to find out which package provides some feature or file.
+	- B2. yum install net-tools
+2. traceroute
+	- yum install traceroute
+3. iptables
+	- yum install ibtables
+=======ROUTING=====
+==== GAN CARD MANG VMNET===
+	- PC1: vmnet1
+	- PC2: vmnet2
+	- R1: vmnet1 va vmnet0
+	- R2: vmnet2 va vmnet0
+==== CAU HINH IP ====
+=== PC1, PC2 ===
+	- vi /etc/sysconfig/network-scripts/ifcfg-ensXX //vd: ifcfg-ens33, ifcfg-ens37, ..
+	[chinh sua]+ BOOTPROTO="static" // hinh nhu cung co the ="none"
+	[them vao] + IPADDR="192.168.10.2"
+		     NETMASK="255.255.255.0"
+		     GATEWAY="192.168.10.1"
+	- LUU Y: Neu khong co ifcfg-ensXX thi tao file moi hoac coppy file chinh sua (su dung lenh "cat" hoac "cp")
+=== R1, R2 === [ifcfg-ensXX]
+	- ifcfg-ens33:
+		+ DEVICE= ens33
+		  BOOTROTO = static // hinh nhu co the ="none"
+		  ONBOOT=yes
+		  HWADDR=00:0C:29:0D:7D:CC // MAC ADDRESS , co the hk ghi dong nay
+		  IPADDR=192.168.20.1
+		  NETMASK=255.255.255.0
+	- ifcfg-ens37: tuong tu
+=== THIET LAP DEFAUTL ROUTE ===
+	- B1. tao file ipv4_forwarding.conf trong thu muc /etc/sysctl.d/
+	      ghi vao file tren : net.ipv4.ip_forward = 1 
+		+ echo net.ipv4.ip_forward = 1 >> /etc/sysctl.d/ipv4_forwarding.conf
+        - B2. chay thiet lap: 
+		+ sysctl -n -e --system
+	- B3. kiem tra: cat /proc/sys/net/ipv4/ip_forward
+		+ noi dung bang 1: ok
+		+ = 0: echo 1 > /proc/sys/net/ipv4/ip_forward
+=== TAO FILE /etc/sysconfig/network-scripts/route-yyy 
+	<network routing den > via <IP router ke tiep> dev yyy
+	- yyy: interface giao tiep voi router tiep theo.
+- R1: /etc/sysconfig/network-scripts/route-ens33
+		192.168.30.0/24 via 192.168.20.2 dev ens33
+- R2: /etc/sysconfig/network-scripts/route-ens33
+		192.168.10.0/24 via 192.168.20.1 dev ens33
+=== RESTART NETWORK ===
+	- service network restart
+=== PING kiem tra routing ===
+	- su dung ip route, route -n
+	- ping, traceroute
